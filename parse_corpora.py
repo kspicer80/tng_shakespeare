@@ -227,11 +227,18 @@ def parse_tng_file(path):
     lines = text.splitlines()
     meta  = {"season": 0, "episode": 0, "title": path.stem}
 
+    # Derive season/episode from filename (e.g. S03E13_Deja_Q.txt) — these
+    # were corrected by fix_tng_filenames.py and are more reliable than the
+    # file headers, which still carry the scraper's original wrong numbering.
+    m_fn = re.match(r"S(\d{2})E(\d{2})_", path.name)
+    if m_fn:
+        meta["season"]  = int(m_fn.group(1))
+        meta["episode"] = int(m_fn.group(2))
+
+    # Still read the title from the header
     for line in lines[:4]:
         m = re.match(r"TITLE:\s*(.+)", line)
         if m: meta["title"] = m.group(1).strip()
-        m = re.match(r"SEASON:\s*(\d+)\s+EPISODE:\s*(\d+)", line)
-        if m: meta["season"] = int(m.group(1)); meta["episode"] = int(m.group(2))
 
     records  = []
     line_idx = 0
